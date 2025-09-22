@@ -321,7 +321,7 @@ class NaviUploaderGUI:
         self.access_key_entry.insert(0, config.get('aws_access_key_id', ''))
         self.secret_key_entry.insert(0, config.get('aws_secret_access_key', ''))
     
-    def save_configuration(self):
+    def save_configuration(self, show_dialog=True):
         """Save AWS credentials to configuration file"""
         # Keep existing config but update only AWS credentials
         config = self.uploader.config.copy()
@@ -332,11 +332,13 @@ class NaviUploaderGUI:
         
         self.uploader.config = config
         self.uploader.save_config(config)
-        messagebox.showinfo("Success", "AWS credentials saved successfully!")
+        
+        if show_dialog:
+            messagebox.showinfo("Success", "AWS credentials saved successfully!")
     
     def test_connection(self):
         """Test AWS S3 connection"""
-        self.save_configuration()  # Save current config first
+        self.save_configuration(show_dialog=False)  # Save current config first (silently)
         
         if self.uploader.setup_aws_client():
             messagebox.showinfo("Success", "AWS S3 connection successful!")
@@ -349,9 +351,10 @@ class NaviUploaderGUI:
         self.progress_label.config(text=f"Upload Progress: {progress:.1f}%")
         self.root.update_idletasks()
     
-    def start_upload(self):
+    def start_upload(self, is_auto_start=False):
         """Start the upload process in a separate thread"""
-        self.save_configuration()  # Save current config first
+        # Save current config (silently if auto-starting)
+        self.save_configuration(show_dialog=not is_auto_start)
         
         # Validate AWS credentials
         if not all([self.uploader.config['aws_access_key_id'],
@@ -415,8 +418,8 @@ class NaviUploaderGUI:
             self.progress_label.config(text="Auto-starting upload with saved credentials...")
             self.root.update_idletasks()
             
-            # Start upload automatically after a short delay
-            self.root.after(1000, self.start_upload)
+            # Start upload automatically after a short delay (silent mode)
+            self.root.after(1000, lambda: self.start_upload(is_auto_start=True))
         else:
             self.progress_label.config(text="Please enter AWS credentials to begin")
     
