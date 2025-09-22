@@ -254,6 +254,9 @@ class NaviUploaderGUI:
         
         self.setup_ui()
         self.load_saved_config()
+        
+        # Auto-start upload if credentials are available
+        self.root.after(500, self.check_auto_start)
     
     def setup_ui(self):
         """Create the GUI interface"""
@@ -390,13 +393,41 @@ class NaviUploaderGUI:
             self.progress_var.set(100)
             self.progress_label.config(text="Upload completed successfully!")
             messagebox.showinfo("Success", message)
+            
+            # Auto-close after successful upload (with delay for user to see result)
+            self.root.after(3000, self.close_application)
         else:
             self.progress_label.config(text="Upload failed")
             messagebox.showerror("Error", message)
     
+    def close_application(self):
+        """Clean exit of application"""
+        self.root.quit()
+        self.root.destroy()
+    
+    def check_auto_start(self):
+        """Check if we can auto-start upload based on existing credentials"""
+        if (self.uploader.config.get('aws_access_key_id') and 
+            self.uploader.config.get('aws_secret_access_key') and
+            os.path.exists(self.uploader.config['upload_directory'])):
+            
+            # Show auto-start message
+            self.progress_label.config(text="Auto-starting upload with saved credentials...")
+            self.root.update_idletasks()
+            
+            # Start upload automatically after a short delay
+            self.root.after(1000, self.start_upload)
+        else:
+            self.progress_label.config(text="Please enter AWS credentials to begin")
+    
     def run(self):
         """Start the GUI application"""
-        self.root.mainloop()
+        try:
+            self.root.mainloop()
+        finally:
+            # Ensure clean exit and close terminal
+            self.root.quit()
+            self.root.destroy()
 
 
 def main():

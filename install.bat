@@ -81,13 +81,13 @@ echo ===================================================
 echo.
 echo ✅ Navi File Uploader is ready to use
 echo 📁 Launcher location: %cd%\run_navi_uploader.bat
-echo 🖥️  Desktop shortcut: "Navi_upload"
+echo 🖥️  Desktop shortcut: "Navi Upload"
 echo.
 echo Next steps:
-echo 1. Look for "Navi_upload" shortcut on your desktop
+echo 1. Look for "Navi Upload" shortcut on your desktop
 echo 2. Double-click to open the uploader
-echo 3. Configure your AWS credentials and upload directory  
-echo 4. Test the connection and start uploading!
+echo 3. Enter your AWS credentials (first time only)
+echo 4. Upload will start automatically!
 echo.
 echo Alternative: You can also run "run_navi_uploader.bat" directly
 echo.

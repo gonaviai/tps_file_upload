@@ -43,4 +43,4 @@ echo 🚀 Starting Navi File Uploader...
 
 echo.
 echo ✅ Navi File Uploader closed
-pause
+REM Terminal will close automatically

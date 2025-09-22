@@ -21,7 +21,7 @@ def create_desktop_shortcut():
     # Paths - use batch file for better compatibility
     bat_path = Path.cwd() / "run_navi_uploader.bat"
     exe_path = Path.cwd() / "dist" / "navi_uploader.exe"
-    shortcut_path = desktop_path / "Navi_upload.lnk"
+    shortcut_path = desktop_path / "Navi Upload.lnk"
     icon_path = Path.cwd() / "Navi_logo.jpg"
     
     # Prefer batch file if available, fallback to exe
@@ -112,7 +112,7 @@ def create_batch_launcher():
         if not desktop_path.exists():
             desktop_path = Path.home() / "OneDrive" / "Desktop"
         
-        desktop_bat = desktop_path / "Navi_upload.bat"
+        desktop_bat = desktop_path / "Navi Upload.bat"
         
         try:
             import shutil
