@@ -8,36 +8,13 @@ echo         NAVI FILE UPLOADER - INSTALLER
 echo ===================================================
 echo.
 
-REM Check if Python is installed
-echo [1/5] Checking Python installation...
-python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo ❌ Python is not installed or not in PATH
-    echo Please install Python 3.8+ from https://python.org
-    echo Make sure to check "Add Python to PATH" during installation
-    pause
-    exit /b 1
-)
-echo ✅ Python found
-
-REM Check if pip is available
-echo [2/5] Checking pip...
-pip --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo ❌ pip is not available
-    echo Please reinstall Python with pip included
-    pause
-    exit /b 1
-)
-echo ✅ pip found
-
 REM Upgrade pip
-echo [3/5] Upgrading pip...
+echo [1/4] Upgrading pip...
 python -m pip install --upgrade pip --quiet
 echo ✅ pip upgraded
 
 REM Install requirements
-echo [4/5] Installing Python dependencies...
+echo [2/4] Installing Python dependencies...
 echo This may take a few minutes...
 python -m pip install -r requirements.txt --quiet
 if %errorlevel% neq 0 (
@@ -49,7 +26,7 @@ if %errorlevel% neq 0 (
 echo ✅ Dependencies installed
 
 REM Build executable
-echo [5/5] Building Windows executable...
+echo [3/4] Building Windows executable...
 python build_executable.py
 if %errorlevel% neq 0 (
     echo ❌ Failed to build executable
@@ -59,7 +36,7 @@ if %errorlevel% neq 0 (
 )
 
 REM Create desktop shortcut
-echo [6/6] Creating desktop shortcut...
+echo [4/4] Creating desktop shortcut...
 python create_shortcut.py
 if %errorlevel% neq 0 (
     echo ⚠️  Warning: Could not create desktop shortcut
