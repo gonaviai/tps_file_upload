@@ -47,9 +47,9 @@ class NaviUploader:
         default_config = {
             'aws_access_key_id': '',
             'aws_secret_access_key': '',
-            'bucket_name': '',
-            'aws_region': 'us-east-1',
-            'upload_directory': '',
+            'bucket_name': 'tps-files-from-uploader',
+            'aws_region': 'us-west-1',
+            'upload_directory': 'C:/Users/vivek/Downloads',
             'max_workers': 5,
             'chunk_size': 8 * 1024 * 1024  # 8MB chunks for multipart upload
         }
@@ -261,44 +261,32 @@ class NaviUploaderGUI:
         title_label = tk.Label(self.root, text="Navi File Uploader", font=("Arial", 18, "bold"))
         title_label.pack(pady=10)
         
-        # Configuration frame
-        config_frame = tk.LabelFrame(self.root, text="Configuration", padx=10, pady=10)
+        # Configuration frame - Only AWS credentials needed
+        config_frame = tk.LabelFrame(self.root, text="AWS Credentials", padx=10, pady=10)
         config_frame.pack(fill="x", padx=20, pady=10)
         
+        # Show current settings (read-only)
+        info_text = f"S3 Bucket: {self.uploader.config['bucket_name']}\n"
+        info_text += f"AWS Region: {self.uploader.config['aws_region']}\n"
+        info_text += f"Upload Directory: {self.uploader.config['upload_directory']}"
+        
+        info_label = tk.Label(config_frame, text=info_text, font=("Arial", 9), 
+                             justify="left", bg="#f0f0f0", relief="sunken", padx=10, pady=5)
+        info_label.grid(row=0, columnspan=2, pady=(0, 10), sticky="ew")
+        
         # AWS Access Key
-        tk.Label(config_frame, text="AWS Access Key ID:").grid(row=0, column=0, sticky="w", pady=2)
+        tk.Label(config_frame, text="AWS Access Key ID:").grid(row=1, column=0, sticky="w", pady=2)
         self.access_key_entry = tk.Entry(config_frame, width=50, show="*")
-        self.access_key_entry.grid(row=0, column=1, pady=2)
+        self.access_key_entry.grid(row=1, column=1, pady=2)
         
         # AWS Secret Key
-        tk.Label(config_frame, text="AWS Secret Access Key:").grid(row=1, column=0, sticky="w", pady=2)
+        tk.Label(config_frame, text="AWS Secret Access Key:").grid(row=2, column=0, sticky="w", pady=2)
         self.secret_key_entry = tk.Entry(config_frame, width=50, show="*")
-        self.secret_key_entry.grid(row=1, column=1, pady=2)
-        
-        # Bucket Name
-        tk.Label(config_frame, text="S3 Bucket Name:").grid(row=2, column=0, sticky="w", pady=2)
-        self.bucket_entry = tk.Entry(config_frame, width=50)
-        self.bucket_entry.grid(row=2, column=1, pady=2)
-        
-        # AWS Region
-        tk.Label(config_frame, text="AWS Region:").grid(row=3, column=0, sticky="w", pady=2)
-        self.region_entry = tk.Entry(config_frame, width=50)
-        self.region_entry.grid(row=3, column=1, pady=2)
-        
-        # Upload Directory
-        tk.Label(config_frame, text="Upload Directory:").grid(row=4, column=0, sticky="w", pady=2)
-        directory_frame = tk.Frame(config_frame)
-        directory_frame.grid(row=4, column=1, pady=2)
-        
-        self.directory_entry = tk.Entry(directory_frame, width=40)
-        self.directory_entry.pack(side="left")
-        
-        browse_button = tk.Button(directory_frame, text="Browse", command=self.browse_directory)
-        browse_button.pack(side="left", padx=(5, 0))
+        self.secret_key_entry.grid(row=2, column=1, pady=2)
         
         # Save config button
-        save_button = tk.Button(config_frame, text="Save Configuration", command=self.save_configuration)
-        save_button.grid(row=5, columnspan=2, pady=10)
+        save_button = tk.Button(config_frame, text="Save AWS Credentials", command=self.save_configuration)
+        save_button.grid(row=3, columnspan=2, pady=10)
         
         # Progress frame
         progress_frame = tk.LabelFrame(self.root, text="Upload Progress", padx=10, pady=10)
@@ -325,36 +313,23 @@ class NaviUploaderGUI:
         test_button.pack(side="left", padx=10)
     
     def load_saved_config(self):
-        """Load saved configuration into GUI fields"""
+        """Load saved AWS credentials into GUI fields"""
         config = self.uploader.config
         self.access_key_entry.insert(0, config.get('aws_access_key_id', ''))
         self.secret_key_entry.insert(0, config.get('aws_secret_access_key', ''))
-        self.bucket_entry.insert(0, config.get('bucket_name', ''))
-        self.region_entry.insert(0, config.get('aws_region', 'us-east-1'))
-        self.directory_entry.insert(0, config.get('upload_directory', ''))
-    
-    def browse_directory(self):
-        """Open directory selection dialog"""
-        directory = filedialog.askdirectory()
-        if directory:
-            self.directory_entry.delete(0, tk.END)
-            self.directory_entry.insert(0, directory)
     
     def save_configuration(self):
-        """Save configuration from GUI to file"""
-        config = {
+        """Save AWS credentials to configuration file"""
+        # Keep existing config but update only AWS credentials
+        config = self.uploader.config.copy()
+        config.update({
             'aws_access_key_id': self.access_key_entry.get(),
             'aws_secret_access_key': self.secret_key_entry.get(),
-            'bucket_name': self.bucket_entry.get(),
-            'aws_region': self.region_entry.get() or 'us-east-1',
-            'upload_directory': self.directory_entry.get(),
-            'max_workers': 5,
-            'chunk_size': 8 * 1024 * 1024
-        }
+        })
         
         self.uploader.config = config
         self.uploader.save_config(config)
-        messagebox.showinfo("Success", "Configuration saved successfully!")
+        messagebox.showinfo("Success", "AWS credentials saved successfully!")
     
     def test_connection(self):
         """Test AWS S3 connection"""
@@ -375,16 +350,14 @@ class NaviUploaderGUI:
         """Start the upload process in a separate thread"""
         self.save_configuration()  # Save current config first
         
-        # Validate configuration
+        # Validate AWS credentials
         if not all([self.uploader.config['aws_access_key_id'],
-                   self.uploader.config['aws_secret_access_key'],
-                   self.uploader.config['bucket_name'],
-                   self.uploader.config['upload_directory']]):
-            messagebox.showerror("Error", "Please fill in all configuration fields")
+                   self.uploader.config['aws_secret_access_key']]):
+            messagebox.showerror("Error", "Please enter your AWS credentials")
             return
         
         if not os.path.exists(self.uploader.config['upload_directory']):
-            messagebox.showerror("Error", "Upload directory does not exist")
+            messagebox.showerror("Error", f"Upload directory does not exist: {self.uploader.config['upload_directory']}")
             return
         
         # Disable upload button during upload

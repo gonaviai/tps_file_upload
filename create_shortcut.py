@@ -43,13 +43,30 @@ def create_desktop_shortcut():
             shortcut.WorkingDirectory = str(Path.cwd())
             shortcut.Description = "Navi File Uploader - Efficient S3 Upload Tool"
             
-            # Set icon if available
+            # Set icon if available - convert JPG to ICO for Windows compatibility
             if icon_path.exists():
-                # Try to use the exe's embedded icon, or batch file default
-                if target_path.name.endswith('.exe'):
-                    shortcut.IconLocation = f"{target_path},0"
-                else:
-                    shortcut.IconLocation = f"{icon_path},0"
+                try:
+                    # Convert JPG to ICO format for Windows shortcut
+                    from PIL import Image
+                    ico_path = Path.cwd() / "navi_icon.ico"
+                    
+                    img = Image.open(icon_path)
+                    # Resize to standard icon sizes for better compatibility
+                    icon_sizes = [(16, 16), (32, 32), (48, 48), (64, 64)]
+                    img.save(ico_path, format='ICO', sizes=icon_sizes)
+                    
+                    shortcut.IconLocation = str(ico_path)
+                    print(f"✅ Icon converted and applied: {ico_path}")
+                    
+                except ImportError:
+                    print("⚠️ PIL not available for icon conversion")
+                    # Fallback: try to use system default
+                    shortcut.IconLocation = "shell32.dll,43"  # Folder icon as fallback
+                    
+                except Exception as e:
+                    print(f"⚠️ Could not set custom icon: {e}")
+                    # Use system default folder icon
+                    shortcut.IconLocation = "shell32.dll,43"
             
             shortcut.save()
             print(f"✅ Desktop shortcut created: {shortcut_path}")
