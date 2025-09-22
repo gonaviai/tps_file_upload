@@ -35,16 +35,16 @@ def create_executable():
         except Exception as e:
             print(f"Error creating icon: {e}")
     
-    # PyInstaller command
+    # PyInstaller command through Python module
     cmd = [
-        "pyinstaller",
-        "--onefile",                    # Single executable file
-        "--windowed",                   # No console window
-        "--name=navi_uploader",         # Executable name
-        "--distpath=dist",              # Output directory
-        "--workpath=build",             # Build directory
-        "--specpath=.",                 # Spec file location
-        "--add-data=Navi_logo.jpg;.",   # Include logo file
+        sys.executable, "-m", "PyInstaller",  # Use current Python to run PyInstaller module
+        "--onefile",                          # Single executable file
+        "--windowed",                         # No console window
+        "--name=navi_uploader",               # Executable name
+        "--distpath=dist",                    # Output directory
+        "--workpath=build",                   # Build directory
+        "--specpath=.",                       # Spec file location
+        "--add-data=Navi_logo.jpg;.",         # Include logo file
     ]
     
     # Add icon if available
