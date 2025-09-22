@@ -77,21 +77,21 @@ This guide will help you set up the Navi File Uploader for efficient, secure fil
 
 ## 🛠️ Installation
 
-### Option 1: Quick Setup (Recommended)
+### Quick Setup (Recommended)
 1. Download all files to a folder on your Windows machine
 2. Double-click `install.bat`
 3. Wait for installation to complete
 4. Find **"Navi_upload"** shortcut on your desktop
 
-### Option 2: Manual Setup
+### Manual Setup (Alternative)
 1. Open Command Prompt or PowerShell
 2. Navigate to the project folder
 3. Run these commands:
 ```bash
 pip install -r requirements.txt
-python build_executable.py
 python create_shortcut.py
 ```
+4. Use `run_navi_uploader.bat` or the desktop shortcut
 
 ## 🚀 First Time Configuration
 
@@ -128,10 +128,15 @@ python create_shortcut.py
 
 ## 🔄 Daily Usage
 
+### Method 1: Desktop Shortcut
 1. Double-click **"Navi_upload"** on your desktop
 2. Click **"Start Upload"**
 3. Watch the progress bar - no interaction needed!
 4. Get notification when complete
+
+### Method 2: Direct Launch
+1. Double-click `run_navi_uploader.bat` in the project folder
+2. Same experience as desktop shortcut
 
 ## 🐛 Troubleshooting
 
@@ -157,11 +162,12 @@ python create_shortcut.py
 ```
 navi_uploader/
 ├── navi_uploader.py          # Main application
+├── run_navi_uploader.bat     # Reliable launcher script
 ├── requirements.txt          # Python dependencies  
-├── build_executable.py       # Creates Windows executable
 ├── create_shortcut.py        # Creates desktop shortcut
 ├── install.bat              # One-click installer
 ├── Navi_logo.jpg            # Logo for shortcut
+├── SETUP_INSTRUCTIONS.md     # This setup guide
 ├── uploader_config.json     # Configuration (created after first run)
 └── navi_uploader.log        # Upload log file
 ```

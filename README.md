@@ -5,7 +5,7 @@ A robust, efficient Windows desktop application for uploading files to AWS S3 wi
 ## 🚀 Quick Start
 
 1. **Easy Installation**: Double-click `install.bat` and wait for completion
-2. **Desktop Shortcut**: Look for "Navi_upload" on your desktop  
+2. **Launch**: Use "Navi_upload" desktop shortcut OR `run_navi_uploader.bat`
 3. **Configure**: Enter your AWS credentials and upload directory
 4. **Upload**: Click "Start Upload" and watch the progress!
 
@@ -24,25 +24,37 @@ A robust, efficient Windows desktop application for uploading files to AWS S3 wi
 - **Robust error handling**: Continues even if individual files fail
 
 ### 🎯 **User-Friendly**
-- **No installation required**: Self-contained executable
+- **No installation required**: Runs directly with Python
 - **Simple GUI**: Easy configuration and one-click uploading
 - **Real-time progress**: Visual progress bar with percentage completion
-- **Desktop integration**: Custom icon and shortcut
+- **Desktop integration**: Custom shortcut for easy access
 
 ## 📁 Project Structure
 
+### **Core Files (Required)**
 ```
 navi_file_upload/
 ├── 📱 navi_uploader.py          # Main application with GUI
-├── 🔧 build_executable.py       # Creates Windows .exe file
-├── 🔗 create_shortcut.py        # Generates desktop shortcut
+├── 🚀 run_navi_uploader.bat     # Reliable Windows launcher  
 ├── ⚙️  install.bat              # One-click Windows installer
 ├── 📦 requirements.txt          # Python dependencies
 ├── 🎨 Navi_logo.jpg            # Application icon
-├── 📖 SETUP_INSTRUCTIONS.md     # Detailed setup guide
-├── 📋 uploader_config.json      # User configuration (created after first run)
+└── 📖 SETUP_INSTRUCTIONS.md     # Detailed AWS setup guide
+```
+
+### **Generated Files (After Installation)**
+```
+├── 🔗 create_shortcut.py        # Creates desktop shortcut
+├── 📋 uploader_config.json      # User configuration
 ├── 📝 navi_uploader.log         # Upload activity log
-└── 📊 README.md                # This file
+└── 🖥️  Desktop: "Navi_upload"   # Desktop shortcut
+```
+
+### **Optional Files** 
+```
+├── 🔧 build_executable.py       # Creates .exe (Windows compatibility issues)
+├── 🛠️  TROUBLESHOOTING.md       # Advanced troubleshooting
+└── 📊 README.md                # This documentation
 ```
 
 ## 🛠️ Technical Specifications
@@ -50,7 +62,7 @@ navi_file_upload/
 ### **Core Components**
 - **Backend**: Python 3.8+ with boto3 for AWS integration
 - **GUI**: Tkinter for cross-platform desktop interface  
-- **Packaging**: PyInstaller for standalone executable creation
+- **Launcher**: Windows batch file for reliable execution
 - **Threading**: Concurrent uploads for maximum efficiency
 
 ### **AWS Integration**
@@ -105,11 +117,11 @@ Check `navi_uploader.log` for detailed error messages and upload history.
 - Pillow for icon processing
 - pywin32 for Windows shortcuts
 
-### **Building from Source**
+### **Manual Setup**
 ```bash
 pip install -r requirements.txt
-python build_executable.py
 python create_shortcut.py
+# Then use run_navi_uploader.bat or desktop shortcut
 ```
 
 ## 📄 License & Usage
@@ -118,4 +130,4 @@ Built for efficient, secure file uploads to AWS S3. Designed for enterprise use 
 
 ---
 
-**🔥 Ready to upload? Double-click that "Navi_upload" shortcut and get started!**
+**🔥 Ready to upload? Double-click "Navi_upload" shortcut or run `run_navi_uploader.bat` and get started!**

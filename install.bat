@@ -66,22 +66,12 @@ if %errorlevel% neq 0 (
 )
 echo ✅ Dependencies installed
 
-REM Build executable
-echo [4/5] Building Windows executable...
-%PYTHON_CMD% build_executable.py
-if %errorlevel% neq 0 (
-    echo ❌ Failed to build executable
-    echo Please check the error messages above
-    pause
-    exit /b 1
-)
-
 REM Create desktop shortcut
-echo [5/5] Creating desktop shortcut...
+echo [4/4] Creating desktop shortcut...
 %PYTHON_CMD% create_shortcut.py
 if %errorlevel% neq 0 (
     echo ⚠️  Warning: Could not create desktop shortcut
-    echo You can manually run the executable from: dist\navi_uploader.exe
+    echo You can manually run: run_navi_uploader.bat
 )
 
 echo.
@@ -90,14 +80,16 @@ echo              INSTALLATION COMPLETE!
 echo ===================================================
 echo.
 echo ✅ Navi File Uploader is ready to use
-echo 📁 Executable location: %cd%\dist\navi_uploader.exe
+echo 📁 Launcher location: %cd%\run_navi_uploader.bat
 echo 🖥️  Desktop shortcut: "Navi_upload"
 echo.
 echo Next steps:
 echo 1. Look for "Navi_upload" shortcut on your desktop
 echo 2. Double-click to open the uploader
-echo 3. Configure your AWS credentials and upload directory
+echo 3. Configure your AWS credentials and upload directory  
 echo 4. Test the connection and start uploading!
+echo.
+echo Alternative: You can also run "run_navi_uploader.bat" directly
 echo.
 echo For help, see: SETUP_INSTRUCTIONS.md
 echo.
