@@ -45,6 +45,8 @@ def create_executable():
         "--workpath=build",                   # Build directory
         "--specpath=.",                       # Spec file location
         "--add-data=Navi_logo.jpg;.",         # Include logo file
+        "--clean",                            # Clean cache and temporary files
+        "--noconfirm",                        # Replace output directory without confirmation
     ]
     
     # Add icon if available

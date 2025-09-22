@@ -18,14 +18,18 @@ def create_desktop_shortcut():
             print("❌ Could not find desktop folder")
             return False
     
-    # Paths
+    # Paths - use batch file for better compatibility
+    bat_path = Path.cwd() / "run_navi_uploader.bat"
     exe_path = Path.cwd() / "dist" / "navi_uploader.exe"
     shortcut_path = desktop_path / "Navi_upload.lnk"
     icon_path = Path.cwd() / "Navi_logo.jpg"
     
-    if not exe_path.exists():
-        print(f"❌ Executable not found: {exe_path}")
-        print("Please run build_executable.py first")
+    # Prefer batch file if available, fallback to exe
+    target_path = bat_path if bat_path.exists() else exe_path
+    
+    if not target_path.exists():
+        print(f"❌ Neither batch file nor executable found")
+        print("Please run the installer or build_executable.py first")
         return False
     
     try:
@@ -35,14 +39,17 @@ def create_desktop_shortcut():
             
             shell = win32com.client.Dispatch("WScript.Shell")
             shortcut = shell.CreateShortCut(str(shortcut_path))
-            shortcut.Targetpath = str(exe_path)
-            shortcut.WorkingDirectory = str(exe_path.parent)
+            shortcut.Targetpath = str(target_path)
+            shortcut.WorkingDirectory = str(Path.cwd())
             shortcut.Description = "Navi File Uploader - Efficient S3 Upload Tool"
             
             # Set icon if available
             if icon_path.exists():
-                # Try to use the exe's embedded icon
-                shortcut.IconLocation = f"{exe_path},0"
+                # Try to use the exe's embedded icon, or batch file default
+                if target_path.name.endswith('.exe'):
+                    shortcut.IconLocation = f"{target_path},0"
+                else:
+                    shortcut.IconLocation = f"{icon_path},0"
             
             shortcut.save()
             print(f"✅ Desktop shortcut created: {shortcut_path}")
@@ -80,22 +87,27 @@ python navi_uploader.py
 
 def create_batch_launcher():
     """Create simple batch file launcher as fallback"""
-    batch_content = f'''@echo off
-title Navi File Uploader
-cd /d "{Path.cwd()}"
-dist\\navi_uploader.exe
-pause
-'''
+    bat_file = Path.cwd() / "run_navi_uploader.bat"
     
-    batch_path = Path.home() / "Desktop" / "Navi_upload.bat"
-    try:
-        with open(batch_path, "w") as f:
-            f.write(batch_content)
-        print(f"✅ Batch launcher created: {batch_path}")
-        return True
-    except Exception as e:
-        print(f"❌ Error creating batch launcher: {e}")
-        return False
+    # If our batch file exists, just copy it to desktop
+    if bat_file.exists():
+        desktop_path = Path.home() / "Desktop"
+        if not desktop_path.exists():
+            desktop_path = Path.home() / "OneDrive" / "Desktop"
+        
+        desktop_bat = desktop_path / "Navi_upload.bat"
+        
+        try:
+            import shutil
+            shutil.copy2(bat_file, desktop_bat)
+            print(f"✅ Batch launcher copied to desktop: {desktop_bat}")
+            return True
+        except Exception as e:
+            print(f"❌ Error copying batch launcher: {e}")
+            return False
+    
+    print("❌ run_navi_uploader.bat not found")
+    return False
 
 if __name__ == "__main__":
     print("🔗 Creating Desktop Shortcut")
