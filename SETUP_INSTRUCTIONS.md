@@ -21,8 +21,9 @@ This guide will help you set up the Navi File Uploader for efficient, secure fil
 ### Step 2: Create IAM User with Minimal Permissions
 1. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/) → **Users** → **Create User**
 2. User name: `file-uploader-user`
-3. Select **"Programmatic access"** (for API keys)
-4. Create a custom policy with these **minimal security permissions**:
+3. Click **"Next"**
+4. Select **"Attach policies directly"**
+5. Click **"Create policy"** to create a custom policy with these **minimal security permissions**:
 
 ```json
 {
@@ -45,7 +46,34 @@ This guide will help you set up the Navi File Uploader for efficient, secure fil
 
 ⚠️ **IMPORTANT**: Replace `your-bucket-name` with your actual bucket name!
 
-5. **Save the Access Key ID and Secret Access Key** - you'll need these!
+6. **Create the Policy**:
+   - Switch to the **JSON** tab
+   - Paste the policy above (replacing `your-bucket-name`)
+   - Click **"Next: Tags"** (skip tags)
+   - Click **"Next: Review"**
+   - Policy name: `NaviFileUploaderPolicy`
+   - Click **"Create policy"**
+
+7. **Attach Policy to User**:
+   - Go back to the user creation tab
+   - Refresh the policy list
+   - Search for `NaviFileUploaderPolicy`
+   - Check the box next to your policy
+   - Click **"Next"**
+   - Click **"Create user"**
+
+8. **Create Access Keys**:
+   - Click on your newly created user (`file-uploader-user`)
+   - Go to the **"Security credentials"** tab
+   - Click **"Create access key"**
+   - Select **"Application running outside AWS"**
+   - Click **"Next"**
+   - Add description: `Navi File Uploader`
+   - Click **"Create access key"**
+   - **💾 SAVE THESE CREDENTIALS** - you'll need them:
+     - **Access Key ID**: Copy this value
+     - **Secret Access Key**: Copy this value (you won't see it again!)
+   - Click **"Done"**
 
 ## 🛠️ Installation
 
