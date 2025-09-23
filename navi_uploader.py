@@ -51,7 +51,8 @@ class NaviUploader:
             'aws_region': 'us-west-1',
             'upload_directories': [
                 'Z:\\1. DAS Data\\T-38',
-                'Z:\\1. DAS Data\\C-12'
+                'Z:\\1. DAS Data\\C-12',
+                'Z:\\2. DTC Data'
             ],
             'max_workers': 5,
             'chunk_size': 8 * 1024 * 1024  # 8MB chunks for multipart upload
