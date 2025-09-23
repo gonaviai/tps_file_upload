@@ -79,11 +79,21 @@ class NaviUploader:
     def setup_aws_client(self) -> bool:
         """Initialize AWS S3 client with credentials"""
         try:
+            # Configure connection pool for multi-threading
+            from botocore.config import Config
+            
+            config = Config(
+                region_name=self.config['aws_region'],
+                retries={'max_attempts': 3, 'mode': 'adaptive'},
+                max_pool_connections=100,  # Large pool size for optimal multi-threading
+                signature_version='s3v4'
+            )
+            
             self.s3_client = boto3.client(
                 's3',
                 aws_access_key_id=self.config['aws_access_key_id'],
                 aws_secret_access_key=self.config['aws_secret_access_key'],
-                region_name=self.config['aws_region']
+                config=config
             )
             
             # Test connection
@@ -159,16 +169,20 @@ class NaviUploader:
         try:
             # For large files, use multipart upload
             if file_size > self.config['chunk_size']:
+                # Configure transfer for better connection management
+                transfer_config = boto3.s3.transfer.TransferConfig(
+                    multipart_threshold=self.config['chunk_size'],
+                    max_concurrency=5,  # Reduce concurrency to prevent pool overflow
+                    multipart_chunksize=self.config['chunk_size'],
+                    use_threads=True,
+                    max_io_queue=100
+                )
+                
                 self.s3_client.upload_file(
                     file_path, 
                     self.config['bucket_name'], 
                     s3_key,
-                    Config=boto3.s3.transfer.TransferConfig(
-                        multipart_threshold=self.config['chunk_size'],
-                        max_concurrency=10,
-                        multipart_chunksize=self.config['chunk_size'],
-                        use_threads=True
-                    )
+                    Config=transfer_config
                 )
             else:
                 self.s3_client.upload_file(file_path, self.config['bucket_name'], s3_key)
@@ -211,9 +225,10 @@ class NaviUploader:
         
         logger.info("Starting upload of %d files (%s bytes)", len(files_to_upload), f"{self.upload_stats['total_size']:,}")
         
-        # Upload files with threading
+        # Upload files with threading (reduced workers to prevent connection pool issues)
         successful_uploads = 0
-        with ThreadPoolExecutor(max_workers=self.config['max_workers']) as executor:
+        max_workers = min(self.config['max_workers'], 3)  # Limit to 3 to prevent connection pool overflow
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_file = {
                 executor.submit(self.upload_file, file_path, s3_key, size): (file_path, s3_key, size)
                 for file_path, s3_key, size in files_to_upload
