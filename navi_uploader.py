@@ -267,23 +267,13 @@ class NaviUploaderGUI:
         title_label = tk.Label(self.root, text="Navi File Uploader", font=("Arial", 18, "bold"))
         title_label.pack(pady=10)
         
-        # Configuration frame - Only AWS credentials needed
-        config_frame = tk.LabelFrame(self.root, text="Server Credentials", padx=10, pady=10)
-        config_frame.pack(fill="x", padx=20, pady=10)
+        # Configuration frame - Only show if credentials are missing
+        self.config_frame = None
+        self.access_key_entry = None
+        self.secret_key_entry = None
         
-        # AWS Access Key
-        tk.Label(config_frame, text="Server Access Key ID:").grid(row=0, column=0, sticky="w", pady=2)
-        self.access_key_entry = tk.Entry(config_frame, width=50, show="*")
-        self.access_key_entry.grid(row=0, column=1, pady=2)
-        
-        # AWS Secret Key
-        tk.Label(config_frame, text="Server Secret Access Key:").grid(row=1, column=0, sticky="w", pady=2)
-        self.secret_key_entry = tk.Entry(config_frame, width=50, show="*")
-        self.secret_key_entry.grid(row=1, column=1, pady=2)
-        
-        # Save config button
-        save_button = tk.Button(config_frame, text="Save Server Credentials", command=self.save_configuration)
-        save_button.grid(row=2, columnspan=2, pady=10)
+        if not self.has_saved_credentials():
+            self.create_credentials_frame()
         
         # Progress frame
         progress_frame = tk.LabelFrame(self.root, text="Upload Progress", padx=10, pady=10)
@@ -305,30 +295,60 @@ class NaviUploaderGUI:
                                      padx=20, pady=10)
         self.upload_button.pack(side="left", padx=10)
         
-        test_button = tk.Button(button_frame, text="Test Connection", command=self.test_connection,
-                              bg="#2196F3", fg="white", font=("Arial", 12), padx=20, pady=10)
-        test_button.pack(side="left", padx=10)
+        # Only show test button if credentials frame is visible
+        if self.config_frame is not None:
+            test_button = tk.Button(button_frame, text="Test Connection", command=self.test_connection,
+                                  bg="#2196F3", fg="white", font=("Arial", 12), padx=20, pady=10)
+            test_button.pack(side="left", padx=10)
+    
+    def has_saved_credentials(self):
+        """Check if valid credentials are already saved"""
+        config = self.uploader.config
+        return (config.get('aws_access_key_id', '').strip() != '' and 
+                config.get('aws_secret_access_key', '').strip() != '')
+    
+    def create_credentials_frame(self):
+        """Create the credentials input frame"""
+        self.config_frame = tk.LabelFrame(self.root, text="Server Credentials", padx=10, pady=10)
+        self.config_frame.pack(fill="x", padx=20, pady=10)
+        
+        # AWS Access Key
+        tk.Label(self.config_frame, text="Server Access Key ID:").grid(row=0, column=0, sticky="w", pady=2)
+        self.access_key_entry = tk.Entry(self.config_frame, width=50, show="*")
+        self.access_key_entry.grid(row=0, column=1, pady=2)
+        
+        # AWS Secret Key
+        tk.Label(self.config_frame, text="Server Secret Access Key:").grid(row=1, column=0, sticky="w", pady=2)
+        self.secret_key_entry = tk.Entry(self.config_frame, width=50, show="*")
+        self.secret_key_entry.grid(row=1, column=1, pady=2)
+        
+        # Save config button
+        save_button = tk.Button(self.config_frame, text="Save Server Credentials", command=self.save_configuration)
+        save_button.grid(row=2, columnspan=2, pady=10)
     
     def load_saved_config(self):
-        """Load saved AWS credentials into GUI fields"""
-        config = self.uploader.config
-        self.access_key_entry.insert(0, config.get('aws_access_key_id', ''))
-        self.secret_key_entry.insert(0, config.get('aws_secret_access_key', ''))
+        """Load saved AWS credentials into GUI fields if they exist"""
+        if self.access_key_entry is not None and self.secret_key_entry is not None:
+            config = self.uploader.config
+            self.access_key_entry.insert(0, config.get('aws_access_key_id', ''))
+            self.secret_key_entry.insert(0, config.get('aws_secret_access_key', ''))
     
     def save_configuration(self, show_dialog=True):
         """Save AWS credentials to configuration file"""
-        # Keep existing config but update only AWS credentials
-        config = self.uploader.config.copy()
-        config.update({
-            'aws_access_key_id': self.access_key_entry.get(),
-            'aws_secret_access_key': self.secret_key_entry.get(),
-        })
-        
-        self.uploader.config = config
-        self.uploader.save_config(config)
-        
-        if show_dialog:
-            messagebox.showinfo("Success", "Server credentials saved successfully!")
+        # Only save if entry fields exist (credentials frame is shown)
+        if self.access_key_entry is not None and self.secret_key_entry is not None:
+            # Keep existing config but update only AWS credentials
+            config = self.uploader.config.copy()
+            config.update({
+                'aws_access_key_id': self.access_key_entry.get(),
+                'aws_secret_access_key': self.secret_key_entry.get(),
+            })
+            
+            self.uploader.config = config
+            self.uploader.save_config(config)
+            
+            if show_dialog:
+                messagebox.showinfo("Success", "Server credentials saved successfully!")
     
     def test_connection(self):
         """Test AWS S3 connection"""
@@ -353,7 +373,7 @@ class NaviUploaderGUI:
         # Validate AWS credentials
         if not all([self.uploader.config['aws_access_key_id'],
                    self.uploader.config['aws_secret_access_key']]):
-            messagebox.showerror("Error", "Please enter your AWS credentials")
+            messagebox.showerror("Error", "Please enter your server credentials")
             return
         
         if not os.path.exists(self.uploader.config['upload_directory']):
