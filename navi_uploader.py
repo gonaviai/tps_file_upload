@@ -255,6 +255,9 @@ class NaviUploaderGUI:
         self.setup_ui()
         self.load_saved_config()
         
+        # Set up proper close handler for terminal cleanup
+        self.root.protocol("WM_DELETE_WINDOW", self.close_application)
+        
         # Auto-start upload if credentials are available
         self.root.after(500, self.check_auto_start)
     
@@ -268,28 +271,19 @@ class NaviUploaderGUI:
         config_frame = tk.LabelFrame(self.root, text="AWS Credentials", padx=10, pady=10)
         config_frame.pack(fill="x", padx=20, pady=10)
         
-        # Show current settings (read-only)
-        info_text = f"S3 Bucket: {self.uploader.config['bucket_name']}\n"
-        info_text += f"AWS Region: {self.uploader.config['aws_region']}\n"
-        info_text += f"Upload Directory: {self.uploader.config['upload_directory']}"
-        
-        info_label = tk.Label(config_frame, text=info_text, font=("Arial", 9), 
-                             justify="left", bg="#f0f0f0", relief="sunken", padx=10, pady=5)
-        info_label.grid(row=0, columnspan=2, pady=(0, 10), sticky="ew")
-        
         # AWS Access Key
-        tk.Label(config_frame, text="AWS Access Key ID:").grid(row=1, column=0, sticky="w", pady=2)
+        tk.Label(config_frame, text="AWS Access Key ID:").grid(row=0, column=0, sticky="w", pady=2)
         self.access_key_entry = tk.Entry(config_frame, width=50, show="*")
-        self.access_key_entry.grid(row=1, column=1, pady=2)
+        self.access_key_entry.grid(row=0, column=1, pady=2)
         
         # AWS Secret Key
-        tk.Label(config_frame, text="AWS Secret Access Key:").grid(row=2, column=0, sticky="w", pady=2)
+        tk.Label(config_frame, text="AWS Secret Access Key:").grid(row=1, column=0, sticky="w", pady=2)
         self.secret_key_entry = tk.Entry(config_frame, width=50, show="*")
-        self.secret_key_entry.grid(row=2, column=1, pady=2)
+        self.secret_key_entry.grid(row=1, column=1, pady=2)
         
         # Save config button
         save_button = tk.Button(config_frame, text="Save AWS Credentials", command=self.save_configuration)
-        save_button.grid(row=3, columnspan=2, pady=10)
+        save_button.grid(row=2, columnspan=2, pady=10)
         
         # Progress frame
         progress_frame = tk.LabelFrame(self.root, text="Upload Progress", padx=10, pady=10)
@@ -396,9 +390,7 @@ class NaviUploaderGUI:
             self.progress_var.set(100)
             self.progress_label.config(text="Upload completed successfully!")
             messagebox.showinfo("Success", message)
-            
-            # Auto-close after successful upload (with delay for user to see result)
-            self.root.after(3000, self.close_application)
+            # User can now close the app manually - no auto-close
         else:
             self.progress_label.config(text="Upload failed")
             messagebox.showerror("Error", message)
