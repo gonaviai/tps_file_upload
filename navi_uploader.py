@@ -328,7 +328,7 @@ class NaviUploaderGUI:
         self.uploader.save_config(config)
         
         if show_dialog:
-            messagebox.showinfo("Success", "AWS credentials saved successfully!")
+            messagebox.showinfo("Success", "Server credentials saved successfully!")
     
     def test_connection(self):
         """Test AWS S3 connection"""
@@ -347,8 +347,8 @@ class NaviUploaderGUI:
     
     def start_upload(self, is_auto_start=False):
         """Start the upload process in a separate thread"""
-        # Save current config (silently if auto-starting)
-        self.save_configuration(show_dialog=not is_auto_start)
+        # Save current config silently (no dialog for uploads)
+        self.save_configuration(show_dialog=False)
         
         # Validate AWS credentials
         if not all([self.uploader.config['aws_access_key_id'],
