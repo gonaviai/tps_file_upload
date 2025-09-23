@@ -413,7 +413,7 @@ class NaviUploaderGUI:
             # Start upload automatically after a short delay (silent mode)
             self.root.after(1000, lambda: self.start_upload(is_auto_start=True))
         else:
-            self.progress_label.config(text="Please enter AWS credentials to begin")
+            self.progress_label.config(text="Please enter server credentials to begin")
     
     def run(self):
         """Start the GUI application"""
