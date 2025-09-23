@@ -456,22 +456,32 @@ class NaviUploaderGUI:
         self.root.destroy()
     
     def check_auto_start(self):
-        """Check if we can auto-start upload based on existing credentials"""
+        """Check if we can auto-start upload based on existing credentials and directories"""
         # Check if any of the upload directories exist
         directories_exist = any(os.path.exists(directory) for directory in self.uploader.config['upload_directories'])
         
-        if (self.uploader.config.get('aws_access_key_id') and 
-            self.uploader.config.get('aws_secret_access_key') and
-            directories_exist):
-            
-            # Show auto-start message
-            self.progress_label.config(text="Auto-starting upload with saved credentials...")
-            self.root.update_idletasks()
-            
-            # Start upload automatically after a short delay (silent mode)
-            self.root.after(1000, lambda: self.start_upload(is_auto_start=True))
-        else:
+        # Check credentials first
+        has_credentials = (self.uploader.config.get('aws_access_key_id') and 
+                          self.uploader.config.get('aws_secret_access_key'))
+        
+        if not has_credentials:
             self.progress_label.config(text="Please enter server credentials to begin")
+            return
+        
+        # Check directories
+        if not directories_exist:
+            # Show directory error even during auto-start
+            missing_dirs = '\n'.join(self.uploader.config['upload_directories'])
+            self.progress_label.config(text="Upload directories not found - see error")
+            messagebox.showerror("Error", f"No upload directories found:\n{missing_dirs}")
+            return
+        
+        # Everything is ready - auto-start upload
+        self.progress_label.config(text="Auto-starting upload with saved credentials...")
+        self.root.update_idletasks()
+        
+        # Start upload automatically after a short delay (silent mode)
+        self.root.after(1000, lambda: self.start_upload(is_auto_start=True))
     
     def run(self):
         """Start the GUI application"""
