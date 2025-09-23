@@ -112,7 +112,7 @@ class NaviUploader:
                     for obj in page['Contents']:
                         existing_files.add(obj['Key'])
             
-            logger.info("Found %d existing files in S3 bucket", len(existing_files))
+            logger.info("Found %d existing files in server", len(existing_files))
             return existing_files
             
         except Exception as e:
