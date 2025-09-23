@@ -49,7 +49,10 @@ class NaviUploader:
             'aws_secret_access_key': '',
             'bucket_name': 'tps-files-from-uploader',
             'aws_region': 'us-west-1',
-            'upload_directory': 'C:/Users/vivek/Downloads',
+            'upload_directories': [
+                'Z:\\1. DAS Data\\T-38',
+                'Z:\\1. DAS Data\\C-12'
+            ],
             'max_workers': 5,
             'chunk_size': 8 * 1024 * 1024  # 8MB chunks for multipart upload
         }
@@ -58,6 +61,12 @@ class NaviUploader:
             try:
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     config = json.load(f)
+                    
+                    # Handle backward compatibility: convert old 'upload_directory' to 'upload_directories'
+                    if 'upload_directory' in config and 'upload_directories' not in config:
+                        config['upload_directories'] = [config['upload_directory']]
+                        del config['upload_directory']
+                    
                     # Merge with defaults to ensure all keys exist
                     default_config.update(config)
                     return default_config
@@ -122,7 +131,6 @@ class NaviUploader:
                     for obj in page['Contents']:
                         existing_files.add(obj['Key'])
             
-            logger.info("Found %d existing files in server", len(existing_files))
             return existing_files
             
         except Exception as e:
@@ -141,28 +149,37 @@ class NaviUploader:
             logger.error("Error calculating hash for %s: %s", file_path, e)
             return ""
     
-    def get_local_files(self, directory: str) -> List[Tuple[str, str, int]]:
-        """Get list of local files with their paths, relative paths, and sizes"""
+    def get_local_files(self, directories: List[str]) -> List[Tuple[str, str, int]]:
+        """Get list of local files from multiple directories with their paths, relative paths, and sizes"""
         local_files = []
-        directory_path = Path(directory)
         
-        if not directory_path.exists():
-            logger.error("Directory does not exist: %s", directory)
-            return local_files
+        for directory in directories:
+            directory_path = Path(directory)
+            
+            if not directory_path.exists():
+                logger.warning("Directory does not exist: %s", directory)
+                continue
+            
+            try:
+                directory_name = directory_path.name  # e.g., "T-38" or "C-12"
+                for file_path in directory_path.rglob('*'):
+                    if file_path.is_file():
+                        # Include directory name in S3 key to avoid conflicts
+                        relative_path = str(file_path.relative_to(directory_path)).replace('\\', '/')
+                        s3_key = f"{directory_name}/{relative_path}"
+                        size = file_path.stat().st_size
+                        local_files.append((str(file_path), s3_key, size))
+                
+                logger.info("Found %d files in %s", 
+                           len([f for f in local_files if f[1].startswith(directory_name)]), 
+                           directory_name)
+                
+            except Exception as e:
+                logger.error("Error scanning directory %s: %s", directory, e)
+                continue
         
-        try:
-            for file_path in directory_path.rglob('*'):
-                if file_path.is_file():
-                    relative_path = str(file_path.relative_to(directory_path)).replace('\\', '/')
-                    size = file_path.stat().st_size
-                    local_files.append((str(file_path), relative_path, size))
-            
-            logger.info("Found %d local files", len(local_files))
-            return local_files
-            
-        except Exception as e:
-            logger.error("Error scanning local directory: %s", e)
-            return []
+        logger.info("Total files found: %d", len(local_files))
+        return local_files
     
     def upload_file(self, file_path: str, s3_key: str, file_size: int) -> bool:
         """Upload a single file to S3"""
@@ -200,8 +217,8 @@ class NaviUploader:
         if not self.setup_aws_client():
             return False, "Failed to connect to AWS S3"
         
-        # Get local files
-        local_files = self.get_local_files(self.config['upload_directory'])
+        # Get local files from all configured directories
+        local_files = self.get_local_files(self.config['upload_directories'])
         if not local_files:
             return False, "No files found to upload"
         
@@ -391,8 +408,11 @@ class NaviUploaderGUI:
             messagebox.showerror("Error", "Please enter your server credentials")
             return
         
-        if not os.path.exists(self.uploader.config['upload_directory']):
-            messagebox.showerror("Error", f"Upload directory does not exist: {self.uploader.config['upload_directory']}")
+        # Check if at least one upload directory exists
+        existing_dirs = [d for d in self.uploader.config['upload_directories'] if os.path.exists(d)]
+        if not existing_dirs:
+            missing_dirs = '\n'.join(self.uploader.config['upload_directories'])
+            messagebox.showerror("Error", f"No upload directories found:\n{missing_dirs}")
             return
         
         # Disable upload button during upload
@@ -437,9 +457,12 @@ class NaviUploaderGUI:
     
     def check_auto_start(self):
         """Check if we can auto-start upload based on existing credentials"""
+        # Check if any of the upload directories exist
+        directories_exist = any(os.path.exists(directory) for directory in self.uploader.config['upload_directories'])
+        
         if (self.uploader.config.get('aws_access_key_id') and 
             self.uploader.config.get('aws_secret_access_key') and
-            os.path.exists(self.uploader.config['upload_directory'])):
+            directories_exist):
             
             # Show auto-start message
             self.progress_label.config(text="Auto-starting upload with saved credentials...")
