@@ -355,9 +355,9 @@ class NaviUploaderGUI:
         self.save_configuration(show_dialog=False)  # Save current config first (silently)
         
         if self.uploader.setup_aws_client():
-            messagebox.showinfo("Success", "AWS S3 connection successful!")
+            messagebox.showinfo("Success", "Server connection successful!")
         else:
-            messagebox.showerror("Error", "Failed to connect to AWS S3. Please check your credentials.")
+            messagebox.showerror("Error", "Failed to connect to server. Please check your credentials.")
     
     def update_progress(self, progress):
         """Update progress bar and label"""
