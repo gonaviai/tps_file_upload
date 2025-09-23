@@ -28,7 +28,7 @@ if %errorlevel% equ 0 (
     goto :python_found
 )
 
-echo ❌ Python not found in PATH
+echo [ERROR] Python not found in PATH
 pause
 exit /b 1
 
@@ -38,9 +38,9 @@ REM Change to script directory
 cd /d "%~dp0"
 
 REM Run the uploader directly with Python
-echo 🚀 Starting Navi File Uploader...
+echo [START] Starting Navi File Uploader...
 %PYTHON_CMD% navi_uploader.py
 
 echo.
-echo ✅ Navi File Uploader closed
+echo [OK] Navi File Uploader closed
 REM Terminal will close automatically

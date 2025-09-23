@@ -14,25 +14,25 @@ set PYTHON_CMD=
 python --version >nul 2>&1
 if %errorlevel% equ 0 (
     set PYTHON_CMD=python
-    echo ✅ Python found: python
+    echo [OK] Python found: python
     goto :python_found
 )
 
 python3 --version >nul 2>&1
 if %errorlevel% equ 0 (
     set PYTHON_CMD=python3
-    echo ✅ Python found: python3
+    echo [OK] Python found: python3
     goto :python_found
 )
 
 py --version >nul 2>&1
 if %errorlevel% equ 0 (
     set PYTHON_CMD=py
-    echo ✅ Python found: py
+    echo [OK] Python found: py
     goto :python_found
 )
 
-echo ❌ Python not found in PATH
+echo [ERROR] Python not found in PATH
 echo.
 echo Please fix one of these issues:
 echo 1. Install Python from https://python.org (check "Add to PATH")
@@ -49,9 +49,9 @@ REM Upgrade pip
 echo [2/5] Upgrading pip...
 %PYTHON_CMD% -m pip install --upgrade pip --quiet
 if %errorlevel% neq 0 (
-    echo ⚠️  Warning: Could not upgrade pip (continuing anyway)
+    echo [WARNING] Could not upgrade pip (continuing anyway)
 ) else (
-    echo ✅ pip upgraded
+    echo [OK] pip upgraded
 )
 
 REM Install requirements
@@ -59,18 +59,18 @@ echo [3/5] Installing Python dependencies...
 echo This may take a few minutes...
 %PYTHON_CMD% -m pip install -r requirements.txt --quiet
 if %errorlevel% neq 0 (
-    echo ❌ Failed to install dependencies
+    echo [ERROR] Failed to install dependencies
     echo Please check your internet connection and try again
     pause
     exit /b 1
 )
-echo ✅ Dependencies installed
+echo [OK] Dependencies installed
 
 REM Create desktop shortcut
 echo [4/4] Creating desktop shortcut...
 %PYTHON_CMD% create_shortcut.py
 if %errorlevel% neq 0 (
-    echo ⚠️  Warning: Could not create desktop shortcut
+    echo [WARNING] Could not create desktop shortcut
     echo You can manually run: run_navi_uploader.bat
 )
 
@@ -79,14 +79,14 @@ echo ===================================================
 echo              INSTALLATION COMPLETE! 
 echo ===================================================
 echo.
-echo ✅ Navi File Uploader is ready to use
-echo 📁 Launcher location: %cd%\run_navi_uploader.bat
-echo 🖥️  Desktop shortcut: "Navi Upload"
+echo [OK] Navi File Uploader is ready to use
+echo [FILE] Launcher location: %cd%\run_navi_uploader.bat
+echo [SHORTCUT] Desktop shortcut: "Navi Upload"
 echo.
 echo Next steps:
 echo 1. Look for "Navi Upload" shortcut on your desktop
 echo 2. Double-click to open the uploader
-echo 3. Enter your AWS credentials (first time only)
+echo 3. Enter your server credentials (first time only)
 echo 4. Upload will start automatically!
 echo.
 echo Alternative: You can also run "run_navi_uploader.bat" directly
