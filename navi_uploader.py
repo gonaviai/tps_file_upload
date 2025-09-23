@@ -88,17 +88,17 @@ class NaviUploader:
             
             # Test connection
             self.s3_client.head_bucket(Bucket=self.config['bucket_name'])
-            logger.info("AWS S3 connection established successfully")
+            logger.info("Server connection established successfully")
             return True
             
         except NoCredentialsError:
-            logger.error("AWS credentials not found")
+            logger.error("Server credentials not found")
             return False
         except ClientError as e:
-            logger.error("AWS connection failed: %s", e)
+            logger.error("Server connection failed: %s", e)
             return False
         except Exception as e:
-            logger.error("Unexpected error setting up AWS: %s", e)
+            logger.error("Unexpected error setting up Server: %s", e)
             return False
     
     def get_s3_file_list(self) -> Set[str]:
@@ -268,21 +268,21 @@ class NaviUploaderGUI:
         title_label.pack(pady=10)
         
         # Configuration frame - Only AWS credentials needed
-        config_frame = tk.LabelFrame(self.root, text="AWS Credentials", padx=10, pady=10)
+        config_frame = tk.LabelFrame(self.root, text="Server Credentials", padx=10, pady=10)
         config_frame.pack(fill="x", padx=20, pady=10)
         
         # AWS Access Key
-        tk.Label(config_frame, text="AWS Access Key ID:").grid(row=0, column=0, sticky="w", pady=2)
+        tk.Label(config_frame, text="Server Access Key ID:").grid(row=0, column=0, sticky="w", pady=2)
         self.access_key_entry = tk.Entry(config_frame, width=50, show="*")
         self.access_key_entry.grid(row=0, column=1, pady=2)
         
         # AWS Secret Key
-        tk.Label(config_frame, text="AWS Secret Access Key:").grid(row=1, column=0, sticky="w", pady=2)
+        tk.Label(config_frame, text="Server Secret Access Key:").grid(row=1, column=0, sticky="w", pady=2)
         self.secret_key_entry = tk.Entry(config_frame, width=50, show="*")
         self.secret_key_entry.grid(row=1, column=1, pady=2)
         
         # Save config button
-        save_button = tk.Button(config_frame, text="Save AWS Credentials", command=self.save_configuration)
+        save_button = tk.Button(config_frame, text="Save Server Credentials", command=self.save_configuration)
         save_button.grid(row=2, columnspan=2, pady=10)
         
         # Progress frame
