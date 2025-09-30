@@ -171,15 +171,13 @@ class NaviUploader:
                         size = file_path.stat().st_size
                         local_files.append((str(file_path), s3_key, size))
                 
-                logger.info("Found %d files in %s", 
-                           len([f for f in local_files if f[1].startswith(directory_name)]), 
-                           directory_name)
+                logger.info("Found files in %s", directory_name)
                 
             except Exception as e:
                 logger.error("Error scanning directory %s: %s", directory, e)
                 continue
         
-        logger.info("Total files found: %d", len(local_files))
+        logger.info("Files found in directories")
         return local_files
     
     def upload_file(self, file_path: str, s3_key: str, file_size: int) -> bool:
@@ -241,7 +239,7 @@ class NaviUploader:
         self.upload_stats['total_files'] = len(files_to_upload)
         self.upload_stats['total_size'] = sum(size for _, _, size in files_to_upload)
         
-        logger.info("Starting upload of %d files (%s bytes)", len(files_to_upload), f"{self.upload_stats['total_size']:,}")
+        logger.info("Starting file upload")
         
         # Upload files with threading (reduced workers to prevent connection pool issues)
         successful_uploads = 0
@@ -266,7 +264,7 @@ class NaviUploader:
                 except Exception as e:
                     logger.error("Error in upload task: %s", e)
         
-        return True, f"Upload completed: {successful_uploads}/{len(files_to_upload)} files uploaded"
+        return True, "File upload completed successfully"
 
 
 class NaviUploaderGUI:
