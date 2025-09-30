@@ -183,7 +183,6 @@ class NaviUploader:
     def upload_file(self, file_path: str, s3_key: str, file_size: int) -> bool:
         """Upload a single file to S3"""
         try:
-            logger.info("Uploading: %s", s3_key)
             # For large files, use multipart upload
             if file_size > self.config['chunk_size']:
                 # Configure transfer for better connection management
@@ -206,11 +205,10 @@ class NaviUploader:
             
             self.upload_stats['uploaded_files'] += 1
             self.upload_stats['uploaded_size'] += file_size
-            logger.info("Upload completed: %s", s3_key)
             return True
             
         except Exception as e:
-            logger.error("Error uploading %s: %s", s3_key, e)
+            logger.error("Error uploading file: %s", e)
             return False
     
     def upload_files(self, progress_callback=None):
