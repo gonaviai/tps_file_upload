@@ -183,6 +183,7 @@ class NaviUploader:
     def upload_file(self, file_path: str, s3_key: str, file_size: int) -> bool:
         """Upload a single file to S3"""
         try:
+            logger.info("Uploading: %s", s3_key)
             # For large files, use multipart upload
             if file_size > self.config['chunk_size']:
                 # Configure transfer for better connection management
@@ -205,6 +206,7 @@ class NaviUploader:
             
             self.upload_stats['uploaded_files'] += 1
             self.upload_stats['uploaded_size'] += file_size
+            logger.info("Upload completed: %s", s3_key)
             return True
             
         except Exception as e:
@@ -222,7 +224,9 @@ class NaviUploader:
             return False, "No files found to upload"
         
         # Get existing S3 files
+        logger.info("Checking existing files on server...")
         s3_files = self.get_s3_file_list()
+        logger.info("Server file check completed")
         
         # Filter files that need to be uploaded
         files_to_upload = []
@@ -233,6 +237,7 @@ class NaviUploader:
                 self.upload_stats['skipped_files'] += 1
         
         if not files_to_upload:
+            logger.info("All files already exist on server")
             return True, "All files are already uploaded"
         
         # Calculate total upload size
@@ -240,16 +245,19 @@ class NaviUploader:
         self.upload_stats['total_size'] = sum(size for _, _, size in files_to_upload)
         
         logger.info("Starting file upload")
+        logger.info("Preparing upload tasks...")
         
         # Upload files with threading (reduced workers to prevent connection pool issues)
         successful_uploads = 0
         max_workers = min(self.config['max_workers'], 3)  # Limit to 3 to prevent connection pool overflow
+        logger.info("Creating upload threads...")
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_file = {
                 executor.submit(self.upload_file, file_path, s3_key, size): (file_path, s3_key, size)
                 for file_path, s3_key, size in files_to_upload
             }
             
+            logger.info("Upload tasks created, processing files...")
             for future in as_completed(future_to_file):
                 file_path, s3_key, size = future_to_file[future]
                 try:
@@ -264,6 +272,7 @@ class NaviUploader:
                 except Exception as e:
                     logger.error("Error in upload task: %s", e)
         
+        logger.info("All uploads completed successfully")
         return True, "File upload completed successfully"
 
 
